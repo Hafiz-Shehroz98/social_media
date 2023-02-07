@@ -1,8 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:social_media/res/component/input_text_field.dart';
 import 'package:social_media/res/component/round_button.dart';
 import 'package:social_media/utils/routes/route_name.dart';
+import 'package:social_media/utils/utils.dart';
+import 'package:social_media/viewModel/login/login_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -63,14 +66,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         InputTextField(
                           myController: emailController,
                           focusNode: emailFocusNode,
-                          onFieldSubmit: (value) {},
+                          onFieldSubmit: (value) {
+                            Utils.filedFocus(
+                                context, emailFocusNode, passwordFocusNode);
+                          },
                           onValidator: (value) {
                             return value.isEmpty ? "Enter Email" : null;
                           },
                           keyBoardType: TextInputType.emailAddress,
                           hint: 'Email',
                           obSecureText: false,
-                          enable: false,
+                          enable: true,
                         ),
                         SizedBox(
                           height: height * .01,
@@ -85,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           keyBoardType: TextInputType.emailAddress,
                           hint: 'Password',
                           obSecureText: true,
-                          enable: false,
+                          enable: true,
                         ),
                       ],
                     ),
@@ -93,19 +99,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    "Forgot Password ?",
-                    style: Theme.of(context).textTheme.headline2!.copyWith(
-                        fontSize: 15, decoration: TextDecoration.underline),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                          context, RouteName.forgotPasswordScreen);
+                    },
+                    child: Text(
+                      "Forgot Password ?",
+                      style: Theme.of(context).textTheme.headline2!.copyWith(
+                          fontSize: 15, decoration: TextDecoration.underline),
+                    ),
                   ),
                 ),
                 const SizedBox(
                   height: 40,
                 ),
-                RoundButton(
-                  title: "Login",
-                  loading: false,
-                  onPress: () {},
+                ChangeNotifierProvider(
+                  create: (_) => LoginController(),
+                  child: Consumer<LoginController>(
+                      builder: (context, provider, child) {
+                    return RoundButton(
+                      title: "Login",
+                      loading: provider.loading,
+                      onPress: () {
+                        if (_formKey.currentState!.validate()) {
+                          provider.login(context, emailController.text,
+                              passwordController.text);
+                        }
+                      },
+                    );
+                  }),
                 ),
                 SizedBox(
                   height: height * .03,
